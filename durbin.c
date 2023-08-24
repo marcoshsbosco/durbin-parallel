@@ -99,19 +99,22 @@ static void kernel_durbin(int n,
         printf("beta: %lf\n", beta);
         printf("\n");
 
-        // fork aqui
+        // barreira aqui
+
         for (i=0; i<k; i++) {
-            sum += r[k-i-1]*y[i];
+            sum += r[k-i-1]*y[i];  // condição de corrida - lock
 
             printf("-- i = %d --\n", i);
             printf("sum: %lf\n", sum);
         }
-        // join aqui
+
+        // barreira aqui
 
         alpha = - (r[k] + sum)/beta;
         printf("\nalpha: %lf\n\n", alpha);
 
-        // fork aqui
+        // barreira aqui
+
         for (i=0; i<k; i++) {
             z[i] = y[i] + alpha*y[k-i-1];
 
@@ -120,15 +123,12 @@ static void kernel_durbin(int n,
         }
         printf("\n");
 
-        // barreira aqui
-
         for (i=0; i<k; i++) {
             y[i] = z[i];
             printf("-- i = %d --\n", i);
             printf("y[%d]: %0.2lf\n", i, y[i]);
         }
         printf("\n");
-        // join aqui
 
         y[k] = alpha;
         printf("y[%d]: %lf\n", k, y[k]);
