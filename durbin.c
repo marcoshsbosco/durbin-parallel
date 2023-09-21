@@ -72,66 +72,31 @@ static void kernel_durbin(int n,
     beta = SCALAR_VAL(1.0);
     alpha = -r[0];
 
-    // prints para debug
-    printf("\n-- Antes de tudo --\n");
-    printf("alpha: %lf\n", alpha);
-    printf("beta: %lf\n", beta);
-    printf("sum: %lf\n", sum);
-
-    printf("r: ");
-    for (int i = 0; i < N; i++) {
-        printf("%0.2lf ", r[i]);
-    }
-    printf("\n");
-
-    printf("y: ");
-    for (int i = 0; i < N; i++) {
-        printf("%0.2lf ", y[i]);
-    }
-    printf("\n");
-    // fim prints para debug
-
     for (k = 1; k < _PB_N; k++) {
         beta = (1-alpha*alpha)*beta;
         sum = SCALAR_VAL(0.0);
-
-        printf("\n------ k = %d ------\n", k);
-        printf("beta: %lf\n", beta);
-        printf("\n");
 
         // barreira aqui
 
         for (i=0; i<k; i++) {
             sum += r[k-i-1]*y[i];  // condição de corrida - lock
-
-            printf("-- i = %d --\n", i);
-            printf("sum: %lf\n", sum);
         }
 
         // barreira aqui
 
         alpha = - (r[k] + sum)/beta;
-        printf("\nalpha: %lf\n\n", alpha);
 
         // barreira aqui
 
         for (i=0; i<k; i++) {
             z[i] = y[i] + alpha*y[k-i-1];
-
-            printf("-- i = %d --\n", i);
-            printf("z[%d]: %0.2lf\n", i, z[i]);
         }
-        printf("\n");
 
         for (i=0; i<k; i++) {
             y[i] = z[i];
-            printf("-- i = %d --\n", i);
-            printf("y[%d]: %0.2lf\n", i, y[i]);
         }
-        printf("\n");
 
         y[k] = alpha;
-        printf("y[%d]: %lf\n", k, y[k]);
     }
     #pragma endscop
 }
@@ -184,10 +149,6 @@ int main(int argc, char** argv) {
     /* Stop and print timer. */
     polybench_stop_instruments;
     polybench_print_instruments;
-
-    /* Prevent dead-code elimination. All live-out data must be printed
-     *    by the function call in argument. */
-    polybench_prevent_dce(print_array(n, POLYBENCH_ARRAY(y)));
 
     /* Be clean. */
     POLYBENCH_FREE_ARRAY(r);
