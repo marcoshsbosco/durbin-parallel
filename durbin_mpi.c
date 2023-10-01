@@ -82,8 +82,6 @@ static void kernel_durbin(int n,
 
         MPI_Barrier(MPI_COMM_WORLD);
 
-        printf("[PROCESSO %d] Meu pedaço vai de %d a %d\n", world_rank, world_rank * k / world_size, (k + k * world_rank) / world_size - 1);
-
         for (i = world_rank * k / world_size; i < (k + k * world_rank) / world_size; i++) {
             sum += r[k-i-1]*y[i];  // condição de corrida - lock
         }
@@ -118,9 +116,9 @@ static void kernel_durbin(int n,
         // if p0: recebo a parte de cada processo do vetor y e escrevo nas posições corretas; envio pra todo mundo vetor y completo
         // if nao p0: send pra p0 da minha parte de y; recebo vetor y inteiro de p0
         if (world_rank == 0) {
-            for (int j = 1; j <= world_size - 1; j++) {
+            for (int j = 1; j < world_size; j++) {
                 for (i = j * k / world_size; i < (k + k * j) / world_size; i++) {
-                    MPI_Recv(&y[i], 1, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    MPI_Recv(&y[i], 1, MPI_DOUBLE, MPI_ANY_SOURCE, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 }
             }
 
@@ -129,7 +127,7 @@ static void kernel_durbin(int n,
             // to-do: ver como que faz pra mandar o vetor todo
         } else {
             for (i = world_rank * k / world_size; i < (k + k * world_rank) / world_size; i++) {
-                MPI_Send(&y[i], 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                MPI_Send(&y[i], 1, MPI_DOUBLE, 0, i, MPI_COMM_WORLD);
             }
 
             MPI_Bcast(y, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
