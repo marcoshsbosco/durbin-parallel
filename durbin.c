@@ -76,17 +76,11 @@ static void kernel_durbin(int n,
         beta = (1-alpha*alpha)*beta;
         sum = SCALAR_VAL(0.0);
 
-        // barreira aqui
-
         for (i=0; i<k; i++) {
-            sum += r[k-i-1]*y[i];  // condição de corrida - lock
+            sum += r[k-i-1]*y[i];
         }
 
-        // barreira aqui
-
         alpha = - (r[k] + sum)/beta;
-
-        // barreira aqui
 
         for (i=0; i<k; i++) {
             z[i] = y[i] + alpha*y[k-i-1];
