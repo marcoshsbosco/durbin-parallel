@@ -133,11 +133,11 @@ int main(int argc, char** argv) {
             i++;
 
             if (strcmp(argv[i], "small") == 0) {
-                N = 4;  // 250k antes
+                N = 440000;  // 250k antes
             } else if (strcmp(argv[i], "medium") == 0) {
-                N = 350000;
+                N = 600000;
             } else if (strcmp(argv[i], "large") == 0) {
-                N = 450000;
+                N = 725000;
             } else {
                 help_message();
 
