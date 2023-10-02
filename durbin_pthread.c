@@ -89,7 +89,7 @@ static void *kernel_durbin(void *arg) {
         sum = SCALAR_VAL(0.0);
         somas_parciais = 0;
 
-        pthread_barrier_wait(&barrier);
+        pthread_barrier_wait(&barrier);  // escrevo y iteração anterior e leio abaixo
 
         for (i = args.fluxoAtual * k / args.fluxos; i < (k + k * args.fluxoAtual) / args.fluxos; i++) {
             sum += args.r[k-i-1]*args.y[i];
@@ -99,7 +99,7 @@ static void *kernel_durbin(void *arg) {
         somas_parciais += sum;
         pthread_mutex_unlock(&mutex);
 
-        pthread_barrier_wait(&barrier);
+        pthread_barrier_wait(&barrier);  // esperar somas_parciais pra escrever sum
 
         sum = somas_parciais;
 
@@ -109,7 +109,7 @@ static void *kernel_durbin(void *arg) {
             z[i] = args.y[i] + alpha*args.y[k-i-1];
         }
 
-        pthread_barrier_wait(&barrier);
+        pthread_barrier_wait(&barrier);  // leio y em cima e escrevo em baixo
 
         for (i = args.fluxoAtual * k / args.fluxos; i < (k + k * args.fluxoAtual) / args.fluxos; i++) {
             args.y[i] = z[i];
