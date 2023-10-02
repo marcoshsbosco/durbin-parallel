@@ -80,10 +80,10 @@ static void kernel_durbin(int n,
         beta = (1-alpha*alpha)*beta;
         sum = SCALAR_VAL(0.0);
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        // aqui não precisa de barreira por causa do bcast da iteração anterior
 
         for (i = world_rank * k / world_size; i < (k + k * world_rank) / world_size; i++) {
-            sum += r[k-i-1]*y[i];  // condição de corrida - lock
+            sum += r[k-i-1]*y[i];
         }
 
         // cada processo envia sua soma parcial para o processo 0 fazer o somatório e fazer o broadcast do valor final para todos
@@ -97,7 +97,7 @@ static void kernel_durbin(int n,
         }
         MPI_Bcast(&sum, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        // aqui não precisa de barreira por causa do bcast acima
 
         alpha = - (r[k] + sum)/beta;
 
@@ -105,7 +105,7 @@ static void kernel_durbin(int n,
             z[i] = y[i] + alpha*y[k-i-1];
         }
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        // não precisa de barreira aqui porque y não é global como no pthread
 
         for (i = world_rank * k / world_size; i < (k + k * world_rank) / world_size; i++) {
             y[i] = z[i];
@@ -117,21 +117,12 @@ static void kernel_durbin(int n,
         // if nao p0: send pra p0 da minha parte de y; recebo vetor y inteiro de p0
         if (world_rank == 0) {
             for (int j = 1; j < world_size; j++) {
-                for (i = j * k / world_size; i < (k + k * j) / world_size; i++) {
-                    MPI_Recv(&y[i], 1, MPI_DOUBLE, MPI_ANY_SOURCE, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                }
+                MPI_Recv(&y[j * k / world_size], (k + k * j) / world_size - j * k / world_size, MPI_DOUBLE, MPI_ANY_SOURCE, j, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
-
-            MPI_Bcast(y, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-            // to-do: ver como que faz pra mandar o vetor todo
         } else {
-            for (i = world_rank * k / world_size; i < (k + k * world_rank) / world_size; i++) {
-                MPI_Send(&y[i], 1, MPI_DOUBLE, 0, i, MPI_COMM_WORLD);
-            }
-
-            MPI_Bcast(y, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            MPI_Send(&y[world_rank * k / world_size], (k + k * world_rank) / world_size - world_rank * k / world_size, MPI_DOUBLE, 0, world_rank, MPI_COMM_WORLD);
         }
+        MPI_Bcast(y, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     #pragma endscop
 }
@@ -146,7 +137,7 @@ int main(int argc, char** argv) {
             i++;
 
             if (strcmp(argv[i], "small") == 0) {
-                N = 440000;  // 250k antes
+                N = 440000;
             } else if (strcmp(argv[i], "medium") == 0) {
                 N = 600000;
             } else if (strcmp(argv[i], "large") == 0) {
@@ -190,10 +181,6 @@ int main(int argc, char** argv) {
     /* Stop and print timer. */
     polybench_stop_instruments;
     polybench_print_instruments;
-
-    if (world_rank == 0) {
-        print_array(n, POLYBENCH_ARRAY(y));
-    }
 
     /* Be clean. */
     POLYBENCH_FREE_ARRAY(r);
