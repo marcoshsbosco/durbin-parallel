@@ -1,3 +1,7 @@
+hyb:
+	@clear
+	mpicc -O3 -I ./ ./polybench.c -o durbin_pthread_mpi.out durbin_pthread_mpi.c
+
 mpi:
 	@clear
 	mpicc -O3 -I ./ ./polybench.c -o durbin_mpi.out durbin_mpi.c
