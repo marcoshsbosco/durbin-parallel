@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 /* Include polybench common header. */
 #include "polybench.h"
@@ -24,6 +25,8 @@
 /* Variáveis que tínhamos no arquivo header antes de passar o tamanho do dataset como argumento de CLI */
 int N;
 int _PB_N;
+
+time_t t0, t1;
 
 
 /* Mensagem de ajuda do programa (--help) */
@@ -135,10 +138,16 @@ int main(int argc, char** argv) {
     /* Start timer. */
     polybench_start_instruments;
 
+    t0 = time(NULL);
+
     /* Run kernel. */
     kernel_durbin (n,
                    POLYBENCH_ARRAY(r),
                    POLYBENCH_ARRAY(y));
+
+    t1 = time(NULL);
+
+    printf("kernel time: %d", t1 - t0);
 
     /* Stop and print timer. */
     polybench_stop_instruments;

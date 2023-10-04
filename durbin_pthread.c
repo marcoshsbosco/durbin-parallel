@@ -14,6 +14,7 @@
 #include <string.h>
 #include <math.h>
 #include <pthread.h>
+#include <time.h>
 
 /* Include polybench common header. */
 #include "polybench.h"
@@ -29,6 +30,7 @@ int _PB_N;
 pthread_barrier_t barrier;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 DATA_TYPE somas_parciais = 0;
+time_t t0, t1;
 
 struct ArgsFluxo {  // encapsula argumentos para cada fluxo
     int fluxos;
@@ -37,6 +39,7 @@ struct ArgsFluxo {  // encapsula argumentos para cada fluxo
     int n;
     DATA_TYPE *r, *y;
 };
+
 
 /* Mensagem de ajuda do programa (--help) */
 void help_message() {
@@ -173,6 +176,8 @@ int main(int argc, char** argv) {
     /* Start timer. */
     polybench_start_instruments;
 
+    t0 = time(NULL);
+
     // criação de fluxos e de seus atributos (ID e número)
     for (int i = 0; i < fluxos; i++) {
         args[i].fluxoAtual = i;
@@ -190,6 +195,10 @@ int main(int argc, char** argv) {
     for (int i = 0; i < fluxos; i++) {
         pthread_join(idsFluxo[i], NULL);
     }
+
+    t1 = time(NULL);
+
+    printf("kernel time: %d", t1 - t0);
 
     pthread_barrier_destroy(&barrier);
 
