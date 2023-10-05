@@ -15,6 +15,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <mpi.h>
+#include <time.h>
 
 /* Include polybench common header. */
 #include "polybench.h"
@@ -41,6 +42,7 @@ struct ArgsFluxo {  // encapsula argumentos para cada fluxo
 
 int world_size;
 int world_rank;
+time_t t0, t1;
 
 /* Mensagem de ajuda do programa (--help) */
 void help_message() {
@@ -216,6 +218,8 @@ int main(int argc, char** argv) {
     /* Start timer. */
     polybench_start_instruments;
 
+    t0 = time(NULL);
+
     // criação de fluxos e de seus atributos (ID e número)
     for (int i = 0; i < fluxos; i++) {
         args[i].fluxoAtual = fluxos * world_rank + i;
@@ -232,6 +236,12 @@ int main(int argc, char** argv) {
     // join
     for (int i = 0; i < fluxos; i++) {
         pthread_join(idsFluxo[i], NULL);
+    }
+
+    t1 = time(NULL);
+
+    if (world_rank == 0) {
+        printf("kernel time: %d", t1 - t0);
     }
 
     pthread_barrier_destroy(&barrier);
