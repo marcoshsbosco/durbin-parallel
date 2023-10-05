@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
             i++;
 
             if (strcmp(argv[i], "small") == 0) {
-                N = 44000;
+                N = 440000;
             } else if (strcmp(argv[i], "medium") == 0) {
                 N = 600000;
             } else if (strcmp(argv[i], "large") == 0) {
