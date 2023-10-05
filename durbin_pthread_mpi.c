@@ -241,7 +241,7 @@ int main(int argc, char** argv) {
     t1 = time(NULL);
 
     if (world_rank == 0) {
-        printf("kernel time: %d", t1 - t0);
+        fprintf(stderr, "kernel time: %d", t1 - t0);
     }
 
     pthread_barrier_destroy(&barrier);

@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
             i++;
 
             if (strcmp(argv[i], "small") == 0) {
-                N = 440000;
+                N = 44000;
             } else if (strcmp(argv[i], "medium") == 0) {
                 N = 600000;
             } else if (strcmp(argv[i], "large") == 0) {
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
 
     t1 = time(NULL);
 
-    printf("kernel time: %d", t1 - t0);
+    fprintf(stderr, "kernel time: %d", t1 - t0);
 
     /* Stop and print timer. */
     polybench_stop_instruments;
